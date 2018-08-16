@@ -304,10 +304,11 @@ func searchAndReplace(l string, t string, specificType string) string {
 		for _, word := range strings.Fields(l) {
 
 			i := 0
+			iMin := -1 // sets minimum index threshold to -1, the value returned by strings.Index() if no match is found
 			for {
 				i += strings.Index(word[i:], t) // find out where in the word the generic type begins
 
-				if i > -1 {
+				if i > iMin { // check that a new word that has not already been parsed has been found
 					if i > 0 && isAlphaNumeric(rune(word[i-1])) || i < len(word)-len(t) && isAlphaNumeric(rune(word[i+len(t)])) {
 						// replace the word with with its exported or unexported specific replacement
 						word = strings.Replace(word, t, wordify(specificType, unicode.IsUpper(rune(strings.TrimLeft(word, "*&")[i]))), 1)
@@ -320,6 +321,7 @@ func searchAndReplace(l string, t string, specificType string) string {
 					break
 				}
 
+				iMin = i // sets minimum index threshold to the index previously parsed, so that the same index is not parsed more than once (handles case where genericType == specificType)
 			}
 		}
 
